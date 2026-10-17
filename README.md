@@ -1,59 +1,63 @@
-# MINAHIL — A Universe Made Just For You
+# MINAHIL — MADE WITH LOVE
 
-A twelve-chapter birthday gift from Muneeb to Minahil, for October 19, 2026. Original inline SVG artwork, CSS environments, one Canvas particle renderer, and optional native Web Audio chimes. No frameworks, installation, build, backend, CDN, fonts, or external services are required.
+A completely new eight-scene, luxury pink birthday experience for Minahil, from her boyfriend Muneeb. Birthday: October 19, 2026. Built only with HTML, CSS, vanilla JavaScript, inline SVG and native Canvas/Web Audio APIs.
 
-## Open the experience
-Open index.html directly in a modern browser. Or serve this directory with any static host. The previous seven-chapter version remains in the separate minahil-birthday directory in the local workspace.
+## Open it
+Open index.html directly in a current Chrome, Edge, Firefox or Safari browser. No installation, build, account, backend, font service, image downloads or animation libraries are required.
 
-## The twelve worlds
-1. A dimensional heart portal with a skippable entrance and a Karachi-date countdown.
-2. A personalized star-stroke constellation, five message stars, and a secret moon.
-3. A rose garden that blooms into a heart, with butterflies, compliments, and a golden secret rose.
-4. A wax-sealed stationery invitation that opens on tap.
-5. Six dimensional floating illustrated objects, message dialogs, arrow controls, and horizontal swipe selection.
-6. A five-flower bouquet builder: choose three or more, wrap it, or rebuild it.
-7. Three ornamental vault compartments; discovering all three reveals a fourth message.
-8. A sealed love letter with a gradual reveal, an instant-reveal option, an internally scrollable reading panel, and a keep/reopen interaction.
-9. An animated coin and wishing well, with an optional private wish. Save and delete are explicit actions.
-10. A three-tier rose cake: light the candles, blow them out, celebrate, and cut a slice.
-11. A finite Canvas fireworks show with heart, rose, and halo patterns, followed by a point-lit personalized birthday greeting. A skip control and static reduced-motion version are included.
-12. A floral celestial finale, discovered-world navigator, final secret star, and complete replay.
+The current project is minahil-birthday/. The earlier twelve-world version remains separately in minahil-universe/. The original seven-scene files were backed up under archive/original-seven-scenes/.
+
+## Eight surprises
+1. A cream envelope, illustrated roses and a cherry-red wax seal. Open Your Surprise releases the seal, unfolds the flap and lifts the letter.
+2. A satin-curtain birthday reveal, staggered name typography, heart rain and the signature rose-petal heart formation.
+3. Five multi-layer SVG roses that bloom into a wrapped bouquet. Each rose opens a different message; the highlighted rose holds a secret.
+4. Five original keepsakes: an opening gold locket, unfolding silk ribbon, perfume bottle, floral charm and miniature love note.
+5. A textured love letter with a paragraph reveal and Read every word now option. The small red heart reveals an extra line. Tap the wax seal three times for another secret.
+6. A three-tier illustrated cake with sugar roses, strawberry details, piped frosting, five candles, candle lighting, extinguishing, smoke and an animated slice on its own plate.
+7. A dimensional red heart, the Send All My Love storm, replay, and Hold to Feel My Love. Hold using mouse, touch, stylus or the Space/Enter key; release reveals the personal message.
+8. A heart-shaped floral wreath, signature heart wave, another celebration, final secret and full replay.
+
+## The heart choreography
+A single requestAnimationFrame clock owns all Canvas activity. The central celebration uses two Canvas layers and a native modal dialog so decorative hearts can pass in front of and behind the central message while the page remains protected from stray clicks.
+
+The standard 4.4-second sequence contains: immediate response (0–180 ms), entry from the four edges, corners and button (180–1000 ms), curved/spiral choreography (1000–2200 ms), formation and a large dimensional heart (2200–3200 ms), then a graceful heart-and-rose-particle release (3200–4400 ms). Devices use either 94 or 208 choreographed hearts depending on width and reported hardware capacity. Particle objects for smaller effects are pooled and bounded.
+
+Distinct presets include heartBurst, heartRain, heartStorm, heartOrbit, heartFormation, heartConfetti, heartTrail and heartPulse. The separate petal sequence assembles a heart, holds it, then opens outward to reveal Minahil's name. Skip is always available during longer animations. Repeated storm clicks cannot create overlapping instances.
+
+Reduced-motion mode replaces the full-screen storm with a still heart and the complete message, dismissed with Keep exploring. All scene actions remain available. Animation pauses in background tabs, Canvas density is capped at 1.75 device pixels, and inactive scene CSS animations pause.
 
 ## Personalize
-At the very beginning of script.js, edit birthdayConfig:
-- birthdayGirl, boyfriend, fatherName: personal details. No age is assumed. The father name is available for future family copy; no message is attributed to him.
-- birthdayDate: YYYY-MM-DD, and timeZone: Asia/Karachi. The countdown never blocks access or becomes negative.
-- websiteName and finalSignature: title and closing line.
-- messages.stars, messages.reasons, messages.vault, messages.letter: editable messages. Use {name} and {boyfriend} where needed.
-- musicEnabled, particlesEnabled, fireworksEnabled, enableEasterEggs, persistProgress: optional features.
-- photos: six optional local image paths, aligned with the love constellation objects. Null uses original illustrations. Missing optional photos fall back to the original artwork.
-Other scene paragraphs can be edited in index.html. Keep the data-name and data-boyfriend spans to preserve automatic name substitution.
+Edit birthdayConfig at the beginning of script.js:
+- birthdayGirl, boyfriend, fatherName, birthdayDate and timeZone control personal details. Father name is available for respectful future copy; no message is attributed to him.
+- romanticSignature changes the closing line.
+- primaryPink, backgroundPink and heartRed change the main theme accents. Other palette variables are centralized at the top of style.css.
+- messages.flowers, messages.keepsakes and messages.letter contain the personal messages. Use {name} and {boyfriend} in those strings.
+- messages.finalSecret changes the P.S. message.
+- enableHeartStorm, enableFloralAnimations, enableMusic and enableParticles control optional effects. Disabling the moving storm retains its accessible still-message alternative.
 
-## Optional music and images
-The default experience uses soft procedural chimes only after the visitor explicitly enables sound. Add audio you own or have permission to use under assets/audio/, then set musicFile to its relative path, for example assets/audio/our-music.mp3. No file is requested when musicFile is null. Sound pauses when the browser tab is hidden and does not restart without a gesture.
+Other short scene paragraphs are in index.html. Preserve the data-name and data-boyfriend spans for automatic name substitution. No age or private relationship history is assumed.
 
-Place optional personal photos in assets/images/ and add relative paths to photos. The website ships with no stock images or broken media placeholders. assets/decorative/ is available for future original decorations.
+## Optional sound
+Without an audio file, the Sound off toggle enables gentle original procedural chimes only after it is pressed. For licensed music you supply, put an audio file in assets/optional-audio/ and set musicFile to its relative path, for example assets/optional-audio/your-music.mp3. Leaving it null causes no audio-file request. Sound pauses when the tab is hidden and does not automatically resume.
 
-## Privacy and saved progress
-Only discovered chapter numbers, the last chapter, and found secret IDs are stored automatically when persistProgress is enabled. On refresh, the visitor can continue or restart; chapter interactions can be played again when revisiting.
+## Controls and accessibility
+Every important action is a real button. Tab through the page and use Enter/Space to activate controls. On the hold button, keep Enter/Space pressed and release it to finish. The previous-scene button and small progress marks revisit discovered scenes. During scene transitions, navigation controls briefly disable to prevent accidental overlapping transitions.
 
-A wish is never sent to Muneeb, GitHub, or any server. Text in the wish field is not stored unless Save on this device is clicked. Forget my saved wish removes it from that browser. A saved wish is retained across replay; only that explicit forget action removes it. Ordinary browser storage clearing also removes it. localStorage can be unavailable in some direct-file/private modes; the journey remains usable and save failures are explained.
+Only the active scene is interactive and exposed to assistive technology. Headings receive focus on navigation; native dialogs trap focus, close with Escape, and restore their trigger. Full replay resets the envelope, garden, keepsakes, letter, seal taps, candles, cake slice, hold state, transient particles and discovered-scene navigation.
 
-## Accessibility and performance
-Each scene has a semantic heading and inactive scenes are inert and hidden from assistive technology. Navigation restores focus to the active heading. Dialogs trap focus through the native dialog element, close with Escape, and restore the triggering control. Every important interaction is a visible keyboard/touch button. Essential content is never dependent on sound or a gesture.
+The page uses 100dvh with a fallback, safe-area padding and hidden page overflow. Each current-scene panel may scroll internally on short screens or with enlarged text. The love letter has its own reading panel.
 
-Reduced motion disables decorative CSS motion and replaces fireworks with a static greeting while preserving interactions. Main-page scrolling is locked; a current chapter can scroll internally on short screens or with enlarged text. Canvas pixel ratio is capped at 1.7, effects are capped, animation pauses in hidden tabs, and scene transitions clean up transient work.
+## GitHub Pages
+Upload index.html, style.css, script.js, README.md and any optional audio to the repository root. Under Settings > Pages, choose Deploy from a branch, main and / (root). No build command is needed. Wait for GitHub to report a successful deployment before sharing the Pages address.
 
-## Deploy to GitHub Pages
-1. Upload the contents of this directory (index.html, style.css, script.js, README.md, and any optional assets) to the repository root.
-2. In the repository's Settings > Pages, choose Deploy from a branch, select main, and / (root), then save.
-3. Wait for GitHub's deployment to finish and open the published URL.
+The existing target repository is https://github.com/zeshanayub044-sudo/minahilbirthday. Its usual Pages URL, when enabled and successfully deployed, is https://zeshanayub044-sudo.github.io/minahilbirthday/.
 
-For zeshanayub044-sudo/minahilbirthday, the usual Pages address is https://zeshanayub044-sudo.github.io/minahilbirthday/ once Pages is enabled and deployment succeeds. A repository upload alone does not enable Pages.
+Netlify and Cloudflare Pages can also serve the folder without a build step.
 
-Netlify and Cloudflare Pages can also serve this directory without a build command.
+## Privacy
+All interactions happen in the browser. No forms, analytics, backend, contact collection or messages to Muneeb are used. The love buttons create on-screen effects only.
 
-## Verification
-JavaScript syntax and dependency-free interaction contracts are checked separately from visual browser checks. The workspace verification/check-universe.cjs runner exercises the complete sequence, including one active scene, inactive-scene inertness, modal messages, secrets, bouquet rebuild, vault unlock, letter keep/reopen, explicit wish save/delete, lighting/extinguishing candles, cake slicing, static sky, chapter map, and replay. It is a development check, not a website dependency or a substitute for visual browser QA.
+## Verification performed
+JavaScript syntax, unique IDs, all eight scenes, selector wiring and removal of the former dark palette passed. Development interaction contracts passed in both normal and reduced-motion modes, including repeated heart storms, pointer/keyboard hold, formation timing, one finite animation loop, secrets and full reset.
 
-The opening scene was loaded in the local browser and produced no console warnings or errors. Browser automation subsequently became unavailable, so full desktop/mobile visual and interaction checks could not be completed in that browser. The runtime site itself requires no Node.js.
+The actual browser journey was exercised on desktop and a 390×844 phone viewport, including all five keepsakes, the letter and seal secret, five lit/extinguished candles, slicing, the complete heart storm, keyboard hold, final secret, signature wave, sound toggle and replay. Additional 320×568 and 844×390 checks confirmed no horizontal page overflow and working internal scrolling for the letter and short layouts. Browser console checks reported no warnings or errors. No claim is made that every browser/device combination has been tested.
