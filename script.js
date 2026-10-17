@@ -1,123 +1,173 @@
-// Personalize this gift here. Keep musicFile null unless you add a local audio file.
+// Change personal details and optional assets here. No network services are used.
 const birthdayConfig = {
-  birthdayGirl: 'Minahil', boyfriend: 'Muneeb', fatherName: 'Zaib',
-  birthdayDate: '2026-10-19', timeZone: 'Asia/Karachi',
-  websiteTitle: 'A Magical Birthday for Minahil',
-  romanticSignature: 'Forever Yours, Muneeb ❤️',
-  enableMusic: true, musicFile: null, enableParticles: true, enableConfetti: true,
-  prominentGreeting: 'Happy Birthday, My Beautiful {name}! ❤️',
-  loveReply: 'Sending all my love right back to you, {name}! ❤️'
+ birthdayGirl: 'Minahil', boyfriend: 'Muneeb', fatherName: 'Zaib',
+ birthdayDate: '2026-10-19', timeZone: 'Asia/Karachi', websiteName: 'A Universe Made Just For You',
+ finalSignature: 'Forever Yours, Muneeb ❤️', musicEnabled: true, musicFile: null,
+ particlesEnabled: true, fireworksEnabled: true, enableEasterEggs: true, persistProgress: true,
+ // Optional local photo paths, one per love-constellation object. Null uses original artwork.
+ photos: [null, null, null, null, null, null],
+ messages: {
+  stars: ['Your smile is my favorite kind of sunshine.', 'You make ordinary moments feel magical.', 'You deserve a world full of happiness.', 'Somewhere on Earth, {boyfriend} is smiling because of you.', 'You are more special than words can explain.'],
+  reasons: [
+   ['Your smile', 'Your smile has a beautiful way of making even the simplest moments feel special.', 'blossom'],
+   ['Your kindness', 'There is something so beautiful about a kind heart. Yours deserves just as much tenderness in return.', 'rose'],
+   ['Your presence', 'You make ordinary days feel brighter just by being part of them.', 'gem'],
+   ['Your happiness', 'More than anything, I want to see you happy, loved, and surrounded by everything that makes your heart smile.', 'lavender'],
+   ['Your beautiful heart', 'I hope you always feel appreciated for the person you are, and the goodness you bring into the world.', 'heart-icon'],
+   ['The little moments', 'Not every moment has to be extraordinary. Knowing you are part of my world makes the simple ones feel warmer.', 'rose']
+  ],
+  vault: [
+   ['A Little Truth', "You're more special to me than I probably manage to tell you."],
+   ['A Little Promise', "I'll always try to make you feel appreciated, respected, and cared for."],
+   ['A Little Secret', 'Even this whole magical website is just a small way of showing you how much you mean to me.']
+  ],
+  letter: [
+   'Happy Birthday, my love.',
+   'I wanted to do something different for you this year. Not just send you a message, but create a little world where every flower, every star, and every surprise reminds you how special you are.',
+   'You have a beautiful way of making life feel warmer and brighter.',
+   'I hope this birthday gives you countless reasons to smile, unforgettable moments to cherish, and the confidence to chase everything your heart dreams of.',
+   'More than anything, I hope you always remember how deserving you are of love, kindness, peace, and happiness.',
+   "No matter how simple or extraordinary the moment may be, I love knowing that you're part of my world.",
+   'So today, this entire little universe belongs to you.',
+   'Happy Birthday, {name}.',
+   'With all my love,', '{boyfriend} ❤️'
+  ]
+ }
 };
 (() => {
 'use strict';
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
+const $ = selector => document.querySelector(selector);
+const $$ = selector => [...document.querySelectorAll(selector)];
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-const mobile = matchMedia('(max-width: 700px)');
-const scenes = $$('.scene');
-let chapter = 0, transitioning = false, card = 0, giftOpened = false, candlesOut = false;
-let transitionTimer, toastTimer;
-const effectTimers = new Set();
-const later = (fn, delay) => { const id = setTimeout(() => { effectTimers.delete(id); fn(); }, reduced.matches ? 0 : delay); effectTimers.add(id); return id; };
-const replace = text => text.replaceAll('{name}', birthdayConfig.birthdayGirl);
-document.title = birthdayConfig.websiteTitle;
-$$('[data-name]').forEach(e => e.textContent = birthdayConfig.birthdayGirl);
-$$('[data-boyfriend]').forEach(e => e.textContent = birthdayConfig.boyfriend);
-$$('[data-father]').forEach(e => e.textContent = birthdayConfig.fatherName);
-$$('[data-signature]').forEach(e => e.textContent = birthdayConfig.romanticSignature);
-const birthday = new Date(birthdayConfig.birthdayDate + 'T00:00:00+05:00');
-const format = options => new Intl.DateTimeFormat('en-GB', {timeZone: birthdayConfig.timeZone, ...options}).format(birthday);
-$$('[data-date]').forEach(e => e.textContent = format({day:'numeric', month:'long', year:'numeric'}));
-$$('[data-birthday-day]').forEach(e => { const day = Number(format({day:'numeric'})); const suffix = day > 10 && day < 14 ? 'th' : ({1:'st',2:'nd',3:'rd'}[day % 10] || 'th'); e.textContent = `${day}${suffix} ${format({month:'long'})}`; });
-function dateNote() {
- const parts = new Intl.DateTimeFormat('en-CA',{timeZone:birthdayConfig.timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
- const value = type => parts.find(p=>p.type===type).value;
- const today = `${value('year')}-${value('month')}-${value('day')}`;
- if(today < birthdayConfig.birthdayDate) {
- const days = Math.max(0, Math.ceil((Date.parse(birthdayConfig.birthdayDate+'T00:00:00Z')-Date.parse(today+'T00:00:00Z'))/86400000));
- $('#date-note').textContent = `${days} ${days===1?'day':'days'} until your special day · The magic is already yours`;
- } else $('#date-note').textContent = today === birthdayConfig.birthdayDate ? 'Today, all this magic is for you.' : 'A little birthday magic, yours to revisit.';
+const fine = matchMedia('(pointer: fine)');
+const scenes = $$('.chapter');
+const titles = ['The Mysterious Portal', 'The Stars Know Your Name', 'The Enchanted Rose Garden', 'The Royal Invitation', 'The Love Constellation', 'Your Magical Bouquet', 'The Secret Love Vault', 'Words From My Heart', 'The Magical Wishing Well', 'The Royal Birthday Cake', 'A Sky Full of Love', 'The Forever Finale'];
+const storageKey = 'minahil-universe-v1';
+const wishKey = 'minahil-private-wish-v1';
+const template = text => text.replaceAll('{name}',birthdayConfig.birthdayGirl).replaceAll('{boyfriend}',birthdayConfig.boyfriend);
+const svg = (symbol, cls='') => '<svg class="'+cls+'" viewBox="'+(symbol==='gem'?'0 0 100 100':symbol==='heart-icon'?'0 0 120 110':'0 0 160 220')+'" aria-hidden="true"><use href="#'+symbol+'"/></svg>';
+let current=0, busy=false, transitionTimer=0, toastTimer=0, modalTrigger=null, audioOn=false, audioContext=null, localAudio=null;
+let state, saved=null, awaitingResume=false, activeTimers=new Set(), fireworksTimer=0, letterTimers=new Set();
+function fresh(){ return {garden:false,invitation:false,flowers:[],wrapped:false,vault:[],letter:false,kept:false,wish:false,cake:0,sliced:false,sky:false,secrets:[],stars:[],visited:[0]}; }
+state=fresh();
+function readStorage(key){try{return localStorage.getItem(key);}catch{return null;}}
+function writeStorage(key,value){try{localStorage.setItem(key,value);return true;}catch{return false;}}
+function eraseStorage(key){try{localStorage.removeItem(key);}catch{}}
+if(birthdayConfig.persistProgress){try {const data=JSON.parse(readStorage(storageKey));if(data && Number.isInteger(data.current) && data.current>=0 && data.current<12 && Array.isArray(data.visited) && data.visited.every(n=>Number.isInteger(n)&&n>=0&&n<12))saved=data;}catch{}}
+function persist(){if(!awaitingResume&&birthdayConfig.persistProgress)writeStorage(storageKey,JSON.stringify({current,visited:state.visited,secrets:state.secrets}));}
+function after(fn,ms,group=activeTimers){const id=setTimeout(()=>{group.delete(id);fn();},reduced.matches?0:ms);group.add(id);return id;}
+function clearTimers(){activeTimers.forEach(clearTimeout);activeTimers.clear();letterTimers.clear();clearTimeout(fireworksTimer);}
+$$('[data-name]').forEach(e=>e.textContent=birthdayConfig.birthdayGirl);
+$$('[data-boyfriend]').forEach(e=>e.textContent=birthdayConfig.boyfriend);
+$$('[data-signature]').forEach(e=>e.textContent=birthdayConfig.finalSignature);
+$$('[data-initials]').forEach(e=>e.textContent=birthdayConfig.boyfriend[0]+' ♡ '+birthdayConfig.birthdayGirl[0]);
+document.title=birthdayConfig.birthdayGirl+' — '+birthdayConfig.websiteName;
+$('#loader p').textContent='Preparing a little magic for '+birthdayConfig.birthdayGirl+'…';
+const date=new Date(birthdayConfig.birthdayDate+'T12:00:00Z');
+const prettyDate=new Intl.DateTimeFormat('en-US',{timeZone:birthdayConfig.timeZone,month:'long',day:'numeric',year:'numeric'}).format(date);
+$$('[data-date]').forEach(e=>e.textContent=prettyDate);
+function countdown(){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:birthdayConfig.timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const part=type=>parts.find(p=>p.type===type).value;const today=part('year')+'-'+part('month')+'-'+part('day');const days=Math.max(0,Math.ceil((Date.parse(birthdayConfig.birthdayDate)-Date.parse(today))/86400000));$('#countdown').textContent=days?days+' days until your birthday · Your universe is already open.':today===birthdayConfig.birthdayDate?'Today, every little world celebrates you.':'A little universe, yours to revisit. Always.';}
+countdown();
+// One bounded Canvas renderer for ambient stars, trails, petals, hearts, confetti and fireworks.
+const canvas=$('#universe'),ctx=canvas.getContext('2d');
+let orbitBounds={width:600,height:300};
+let W=innerWidth,H=innerHeight,dpr=1,raf=0,lastTime=0,ambient=[],effects=[],skyPoints=[],warpUntil=0,pointer={x:0,y:0};
+const colors=['#e9c88b','#f5a9c5','#bfa2ff','#fff9f5'];
+function resize(){orbitBounds={width:$('#love-orbit').clientWidth||600,height:$('#love-orbit').clientHeight||300};W=innerWidth;H=innerHeight;dpr=Math.min(devicePixelRatio||1,1.7);canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ambient=Array.from({length:W<650?48:88},()=>({x:Math.random()*W,y:Math.random()*H,r:.3+Math.random()*1.1,phase:Math.random()*7,speed:.015+Math.random()*.025}));if(state.sky)skyPoints=wordPoints();draw(performance.now());}
+function heartPoint(t){return {x:16*Math.pow(Math.sin(t),3),y:-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))};}
+function addParticle(p){if(effects.length<240)effects.push(p);}
+function burst(x,y,type='sparkles',count=24){if(reduced.matches||(!birthdayConfig.particlesEnabled&&type!=='firework'))return;for(let i=0;i<Math.min(count,W<650?40:70);i++){const a=Math.random()*Math.PI*2,speed=type==='confetti'?2+Math.random()*4:1+Math.random()*2;addParticle({x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed-(type==='confetti'?2:0),life:1,decay:.008+Math.random()*.008,color:colors[i%4],size:type==='hearts'?4+Math.random()*4:type==='confetti'?4:1+Math.random()*2,type,rotation:Math.random()*6});}startLoop();}
+function firework(x,y,pattern){if(reduced.matches||!birthdayConfig.fireworksEnabled)return;const n=W<650?38:64;for(let i=0;i<n;i++){const t=i/n*Math.PI*2;const hp=heartPoint(t);const shape=pattern==='heart'?hp:pattern==='rose'?{x:Math.cos(t)*(10+5*Math.cos(5*t)),y:Math.sin(t)*(10+5*Math.cos(5*t))}:{x:Math.cos(t)*14,y:Math.sin(t)*14};addParticle({x,y,vx:shape.x*.14,vy:shape.y*.14,life:1,decay:.006+Math.random()*.003,color:colors[i%4],size:1.7,type:'firework',rotation:0});}chime(1);startLoop();}
+function wordPoints(){const off=document.createElement('canvas'),c=off.getContext('2d');off.width=Math.min(W*.85,900);off.height=110;const fontSize=Math.min(W<650?25:44,off.width/(('HAPPY BIRTHDAY '+birthdayConfig.birthdayGirl.toUpperCase()).length*.64));c.font='500 '+fontSize+'px Georgia';c.textAlign='center';c.fillText('HAPPY BIRTHDAY '+birthdayConfig.birthdayGirl.toUpperCase(),off.width/2,65);const data=c.getImageData(0,0,off.width,off.height).data,points=[];for(let y=0;y<110;y+=3)for(let x=0;x<off.width;x+=3)if(data[(y*off.width+x)*4+3]>120)points.push({x:x+(W-off.width)/2,y:y+H*.43});return points.slice(0,850);}
+function draw(now){if(current===4&&!reduced.matches&&!document.body.classList.contains('modal-open')){$$('.orbit-object').forEach((b,i)=>{const angle=now*.000035+i*Math.PI/3-Math.PI/2;const depth=(Math.sin(angle)+1)/2;b.style.left='50%';b.style.top='50%';b.style.transform='translate(-50%,-50%) translate3d('+Math.cos(angle)*orbitBounds.width*.34+'px,'+Math.sin(angle)*orbitBounds.height*.36+'px,'+(depth*30)+'px) scale('+(.85+depth*.15)+')';b.style.zIndex=String(Math.round(depth*10));});}ctx.clearRect(0,0,W,H);const moving=!reduced.matches && birthdayConfig.particlesEnabled;for(let i=0;i<ambient.length;i++){const s=ambient[i];const alpha=moving?.22+(Math.sin(now*.0006+s.phase)+1)*.18:.4;ctx.globalAlpha=alpha;ctx.fillStyle=i%5===0?'#f5a9c5':'#e9c88b';const offsetX=current===1?pointer.x*5:0,offsetY=current===1?pointer.y*4:0;if(warpUntil>now&&moving){ctx.strokeStyle='#e9c88b';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.x+(s.x-W/2)*.08,s.y+(s.y-H/2)*.08);ctx.stroke();}else{ctx.beginPath();ctx.arc(s.x+offsetX,s.y+offsetY,s.r,0,7);ctx.fill();}if(moving && (current===2||current===5||current===11)&&i%7===0){ctx.fillStyle=i%2?'#d08caa':'#e9c88b';const py=(s.y-now*.009+H*20)%H;let px=s.x;if(current===11){const hp=heartPoint(i*.67);px=W/2+hp.x*Math.min(W*.021,16);ctx.globalAlpha=.16;ctx.save();ctx.translate(px,H*.48+hp.y*Math.min(W*.021,16));}else{ctx.globalAlpha=.25;ctx.save();ctx.translate(px,py);}ctx.rotate(now*.0001+s.phase);ctx.beginPath();ctx.ellipse(0,0,2.5,5,0,0,7);ctx.fill();ctx.restore();}}
+ ctx.globalAlpha=1;
+ const delta=lastTime?Math.min((now-lastTime)/16.67,2):1;lastTime=now;
+ effects=effects.filter(p=>p.life>0);for(const p of effects){p.x+=p.vx*delta;p.y+=p.vy*delta;p.vy+=(p.type==='confetti'?.035:.008)*delta;p.life-=p.decay*delta;ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.save();ctx.translate(p.x,p.y);if(p.type==='hearts'){ctx.scale(p.size/20,p.size/20);ctx.beginPath();for(let i=0;i<=35;i++){const point=heartPoint(i/35*Math.PI*2);if(i===0)ctx.moveTo(point.x,point.y);else ctx.lineTo(point.x,point.y);}ctx.fill();}else if(p.type==='confetti'){ctx.rotate(p.rotation+p.life*5);ctx.fillRect(-2,-4,4,8);}else{ctx.beginPath();ctx.arc(0,0,p.size,0,7);ctx.fill();}ctx.restore();}
+ if(current===10&&state.sky){ctx.fillStyle='#f6dfb0';ctx.globalAlpha=.9;for(const p of skyPoints){ctx.beginPath();ctx.arc(p.x,p.y,.85,0,7);ctx.fill();}}
+ ctx.globalAlpha=1;
 }
-dateNote();
-for(let i=0;i<7;i++){const dot=document.createElement('span');$('#progress').append(dot);}
-function updateScene(focus=true){
- scenes.forEach((scene,i)=>{scene.classList.toggle('active',i===chapter);scene.inert=i!==chapter;scene.setAttribute('aria-hidden',String(i!==chapter));});
- document.body.dataset.chapter=chapter;
- $$('#progress span').forEach((dot,i)=>{dot.classList.toggle('current',i===chapter);dot.classList.toggle('visited',i<chapter);});
- $('#progress').setAttribute('aria-label',`Chapter ${chapter+1} of 7`);
- $('#back').hidden=chapter===0;
- if(focus) scenes[chapter].querySelector('h1,h2').focus({preventScroll:true});
-}
-function go(next){
- if(transitioning || next<0 || next>6)return;
- transitioning=true;
- if(chapter===0 || chapter===1)burst(innerWidth/2,innerHeight/2,'✧',22);
- chapter=next;updateScene();
- if(chapter===1 || chapter===6)$$('.garden .bloom').forEach(e=>{e.style.animation='none';requestAnimationFrame(()=>e.style.animation='');});
- clearTimeout(transitionTimer);transitionTimer=setTimeout(()=>transitioning=false,reduced.matches?0:700);
-}
-$$('[data-next]').forEach(b=>b.addEventListener('click',()=>go(chapter+1)));
-$('#back').addEventListener('click',()=>go(chapter-1));
-function burst(x,y,symbol='♡',count=18,confetti=false){
- if(reduced.matches || (!birthdayConfig.enableParticles&&!confetti) || (confetti&&!birthdayConfig.enableConfetti))return;
- const container=$('#bursts');const amount=innerWidth<700?Math.min(count,24):count;
- for(let i=0;i<amount;i++){
- const p=document.createElement('span');p.className='burst'+(confetti?' confetti':'');if(!confetti)p.textContent=symbol;
- p.style.left=x+'px';p.style.top=y+'px';p.style.setProperty('--x',`${(Math.random()-.5)*Math.min(innerWidth,800)}px`);p.style.setProperty('--y',`${confetti?80+Math.random()*innerHeight:(Math.random()-.7)*430}px`);p.style.setProperty('--r',`${Math.random()*600-300}deg`);
- if(confetti)p.style.background=[birthdayConfig.enableConfetti?'#e8c78d':'','#f4a7bc','#c9a7eb','#fff8f2'][i%4];
- container.append(p);p.addEventListener('animationend',()=>p.remove(),{once:true});
- }
-}
-function toast(text){clearTimeout(toastTimer);$('#toast').textContent=text;$('#toast').classList.add('show');toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),5000);}
-$('#secret').addEventListener('click',e=>{toast(`Psst... ${birthdayConfig.boyfriend} loves you more than this little website could ever explain. ❤️`);const r=e.currentTarget.getBoundingClientRect();burst(r.x,r.y,'♡',10);});
-function showCard(next){card=(next+3)%3;$$('.love-card').forEach((e,i)=>{e.classList.toggle('selected',card===i);e.hidden=mobile.matches && i!==card;e.setAttribute('aria-pressed',String(i===card));});$('#card-count').textContent=`0${card+1} / 03`;}
-$('#card-prev').addEventListener('click',()=>showCard(card-1));$('#card-next').addEventListener('click',()=>showCard(card+1));
-$$('.love-card').forEach((e,i)=>{
- e.addEventListener('click',()=>{showCard(i);const r=e.getBoundingClientRect();burst(r.x+r.width/2,r.y+60,'✧',9);});
- e.addEventListener('pointermove',event=>{if(mobile.matches||reduced.matches||event.pointerType!=='mouse')return;const r=e.getBoundingClientRect();e.style.transform=`perspective(800px) rotateX(${-(event.clientY-r.y-r.height/2)/40}deg) rotateY(${(event.clientX-r.x-r.width/2)/40}deg)`;});
- e.addEventListener('pointerleave',()=>e.style.transform='');
-});
-$('.cards').addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();showCard(card+(e.key==='ArrowRight'?1:-1));if(mobile.matches)$$('.love-card')[card].focus();}});
-let startX=0,startY=0;
-$('.cards').addEventListener('touchstart',e=>{startX=e.changedTouches[0].clientX;startY=e.changedTouches[0].clientY;},{passive:true});
-$('.cards').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-startX,dy=e.changedTouches[0].clientY-startY;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy))showCard(card+(dx<0?1:-1));},{passive:true});
-mobile.addEventListener('change',()=>showCard(card));showCard(0);
-$('#gift').addEventListener('click',()=>{
- if(giftOpened)return;giftOpened=true;$('#gift').disabled=true;$('#gift').classList.add('opening');
- later(()=>burst(innerWidth/2,innerHeight/2,'♡',20),800);
- later(()=>{$('#gift').hidden=true;$('#gift-hint').hidden=true;$('#letter').hidden=false;$('#gift-next').hidden=false;$('.letter-text').focus({preventScroll:true});},1700);
-});
-for(let i=0;i<5;i++){const c=document.createElement('span');c.className='candle';c.innerHTML='<span class="flame"></span><span class="smoke"></span>';$('.candles').append(c);}
-$('#blow').addEventListener('click',()=>{
- if(candlesOut)return;candlesOut=true;$('#blow').disabled=true;
- $$('.flame').forEach(e=>e.style.animationDuration='.12s');
- $$('.candle').forEach((e,i)=>later(()=>e.classList.add('out'),250+i*150));
- later(()=>{$('#cake').classList.add('celebrated');$('#cake').setAttribute('aria-label','A birthday cake with all five candles extinguished');$('#cake-message').hidden=false;$('#blow').hidden=true;$('#cake-next').hidden=false;burst(innerWidth/2,innerHeight*.25,'',60,true);burst(innerWidth/2,innerHeight*.5,'♡',18);$('#cake-next').focus({preventScroll:true});},1300);
-});
-$('#send-love').addEventListener('click',()=>{burst(innerWidth/2,innerHeight*.6,'♡',35);toast(replace(birthdayConfig.loveReply));});
-$('#replay').addEventListener('click',()=>{
- effectTimers.forEach(clearTimeout);effectTimers.clear();clearTimeout(transitionTimer);clearTimeout(toastTimer);
- giftOpened=false;candlesOut=false;transitioning=false;chapter=0;showCard(0);
- $('#gift').hidden=false;$('#gift').disabled=false;$('#gift').classList.remove('opening');$('#gift-hint').hidden=false;$('#letter').hidden=true;$('#gift-next').hidden=true;$('.letter-text').scrollTop=0;
- $$('.candle').forEach(e=>e.classList.remove('out'));$$('.flame').forEach(e=>e.style.animationDuration='');$('#cake').classList.remove('celebrated');$('#cake').setAttribute('aria-label','A rose decorated two tier birthday cake with five lit candles');$('#cake-message').hidden=true;$('#blow').hidden=false;$('#blow').disabled=false;$('#cake-next').hidden=true;
- $('#toast').classList.remove('show');$('#bursts').replaceChildren();updateScene();
-});
-// Original vector roses, reused as a floral frame without external assets.
-$$('.garden').forEach(g=>{for(let i=0;i<3;i++){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 160 220');svg.innerHTML='<use href="#rose"/>';g.append(svg);}});
-if(birthdayConfig.enableParticles){
- const n=innerWidth<700?20:38;
- for(let i=0;i<n;i++){const s=document.createElement('i');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*4+'s';$('#stars').append(s);}
- for(let i=0;i<(innerWidth<700?9:16);i++){const p=document.createElement('span');p.className='particle'+(i%3===0?' petal':'');if(i%3!==0)p.textContent=i%2?'·':'✧';p.style.left=Math.random()*100+'%';p.style.setProperty('--duration',20+Math.random()*18+'s');p.style.setProperty('--delay',-Math.random()*30+'s');$('#particles').append(p);}
-}
-// No audio is requested until a valid optional file has been explicitly configured.
-let audio=null;
-if(birthdayConfig.enableMusic&&birthdayConfig.musicFile){
- audio=new Audio(birthdayConfig.musicFile);audio.loop=true;audio.volume=.25;$('#music').disabled=false;$('#music').setAttribute('aria-label','Play background music');$('#music').title='Toggle background music';$('#music').setAttribute('aria-pressed','false');
- $('#music').addEventListener('click',async()=>{if(audio.paused){try{await audio.play();$('#music').setAttribute('aria-pressed','true');$('#music').setAttribute('aria-label','Pause background music');}catch{toast('The music could not play. Your birthday magic is still here.');}}else{audio.pause();$('#music').setAttribute('aria-pressed','false');$('#music').setAttribute('aria-label','Play background music');}});
- audio.addEventListener('error',()=>{audio.pause();$('#music').disabled=true;$('#music').title='Music unavailable';});
-}
-document.addEventListener('visibilitychange',()=>{document.body.classList.toggle('paused',document.hidden);if(document.hidden&&audio){audio.pause();$('#music').setAttribute('aria-pressed','false');$('#music').setAttribute('aria-label','Play background music');}});
-// The exact birthday greeting is present prominently within the garden chapter.
-$('#title-1').replaceChildren();const greeting=replace(birthdayConfig.prominentGreeting);$('#title-1').textContent=greeting;
-updateScene(false);
+function frame(now){raf=0;if(document.hidden)return;draw(now);if((!reduced.matches&&(birthdayConfig.particlesEnabled||current===4))||effects.length||warpUntil>now){raf=requestAnimationFrame(frame);}}
+function startLoop(){if(!raf&&!document.hidden){lastTime=0;raf=requestAnimationFrame(frame);}}
+function stopLoop(){cancelAnimationFrame(raf);raf=0;}
+addEventListener('resize',resize);reduced.addEventListener('change',()=>{effects=[];stopLoop();resize();startLoop();});
+function chime(kind=0){if(!audioOn||!audioContext||audioContext.state!=='running')return;const now=audioContext.currentTime;[523.25,659.25,783.99].slice(0,kind?3:1).forEach((hz,i)=>{const o=audioContext.createOscillator(),g=audioContext.createGain();o.type='sine';o.frequency.value=hz;o.connect(g);g.connect(audioContext.destination);g.gain.setValueAtTime(0,now+i*.13);g.gain.linearRampToValueAtTime(.025,now+i*.13+.025);g.gain.exponentialRampToValueAtTime(.0001,now+i*.13+.8);o.start(now+i*.13);o.stop(now+i*.13+.85);});}
+if(!birthdayConfig.musicEnabled){$('#audio-toggle').hidden=true;}else{$('#audio-toggle').addEventListener('click',async()=>{try{if(!audioOn){if(birthdayConfig.musicFile){if(!localAudio){localAudio=new Audio(birthdayConfig.musicFile);localAudio.loop=true;localAudio.volume=.22;localAudio.addEventListener('error',()=>{audioOn=false;syncAudio();toast('The music is unavailable. Your universe is still here.');});}await localAudio.play();}else{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error('Audio unavailable');audioContext=audioContext||new AC();await audioContext.resume();}audioOn=true;chime(1);}else{audioOn=false;if(localAudio)localAudio.pause();if(audioContext)await audioContext.suspend();}syncAudio();}catch{audioOn=false;syncAudio();toast('Audio is unavailable in this browser. Enjoy a little quiet magic.');}});}
+function syncAudio(){$('#audio-toggle').setAttribute('aria-pressed',String(audioOn));$('#audio-toggle').setAttribute('aria-label',(audioOn?'Mute ':'Enable ')+(birthdayConfig.musicFile?'background music':'gentle chimes'));}
+function toast(text){clearTimeout(toastTimer);$('#toast').textContent=template(text);$('#toast').classList.add('show');toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),5500);}
+function openMessage(label,title,text,art='heart-icon',signature='',photo=null){modalTrigger=document.activeElement;$('#dialog-label').textContent=label;$('#dialog-title').textContent=template(title);$('#dialog-copy').replaceChildren();for(const paragraph of (Array.isArray(text)?text:[text])){const p=document.createElement('p');p.textContent=template(paragraph);$('#dialog-copy').append(p);}$('#dialog-signature').textContent=template(signature);$('#dialog-art').innerHTML=svg(art);if(photo){const img=new Image();img.alt=template(title);img.onload=()=>$('#dialog-art').replaceChildren(img);img.src=photo;}document.body.classList.add('modal-open');$('#message-dialog').showModal();chime();}
+$$('dialog').forEach(d=>{d.addEventListener('close',()=>{document.body.classList.remove('modal-open');if(modalTrigger&&modalTrigger.isConnected&&!modalTrigger.closest('[inert]'))modalTrigger.focus({preventScroll:true});});d.querySelector('.dialog-close')?.addEventListener('click',()=>d.close());d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}});});
+function markSecret(id,text){if(!birthdayConfig.enableEasterEggs)return;if(!state.secrets.includes(id))state.secrets.push(id);updateSecrets();persist();burst(W/2,H/2,'hearts',24);openMessage('A LITTLE SECRET','Just between us.',text,'heart-icon','Love, {boyfriend}.');}
+function updateSecrets(){$('#secret-counter').textContent='✧ '+state.secrets.length+' / 3 SECRETS';}
+if(!birthdayConfig.enableEasterEggs){$$('.secret-object').forEach(e=>e.hidden=true);$('#secret-counter').hidden=true;}
+$('#moon-secret').addEventListener('click',()=>markSecret('moon',"{boyfriend}'s Secret: You're his favorite reason to smile. ❤️"));
+$('#star-secret').addEventListener('click',()=>markSecret('star',"You found the last little secret, {name}. I guess I just can't stop finding ways to make you smile. ❤️"));
+$('#last-secret').addEventListener('click',()=>openMessage('ONE MORE LITTLE SECRET','One little thing.', ['Even after all the stars have faded and every flower has fallen, one little thing will still be true…',"You're incredibly special to me, {name}. ❤️"],'heart-icon','Love, {boyfriend}.'));
+function syncScene(focus=true){orbitBounds={width:$('#love-orbit').clientWidth||600,height:$('#love-orbit').clientHeight||300};document.body.classList.toggle('illuminated',(current===2&&state.garden)||(current===6&&state.vault.length>0)||(current===9&&state.cake===1));scenes.forEach((s,i)=>{s.classList.toggle('active',i===current);s.inert=i!==current;s.setAttribute('aria-hidden',String(i!==current));});document.body.dataset.chapter=current;$('#chapter-number').textContent=String(current+1).padStart(2,'0');$('.progress-track i').style.width=(current+1)/12*100+'%';$('#chapter-caption').textContent=titles[current].toUpperCase();$('#back').hidden=current===0;$('#chapter-map').setAttribute('aria-label','Chapter '+(current+1)+' of 12. Open discovered chapters');if(focus)scenes[current].querySelector('h1,h2').focus({preventScroll:true});persist();startLoop();}
+function settlePending(){if($('#envelope').disabled&&!state.letter)openLetter();if(state.letter&&!state.kept)revealWholeLetter();if(state.sky)finishSky();}
+function go(index){if(busy||index<0||index>11||index===current)return;busy=true;settlePending();clearTimers();effects=[];document.body.classList.remove('traveling');current=index;if(!state.visited.includes(index))state.visited.push(index);syncScene();chime();clearTimeout(transitionTimer);transitionTimer=setTimeout(()=>busy=false,reduced.matches?0:750);}
+$$('[data-next]').forEach(b=>b.addEventListener('click',()=>{if(current===0){if(busy)return;busy=true;document.body.classList.add('traveling');warpUntil=performance.now()+850;burst(W*.65,H*.5,'sparkles',45);after(()=>{busy=false;go(1);},650);}else go(current+1);}));
+$('#skip-intro').addEventListener('click',()=>go(1));$('#back').addEventListener('click',()=>go(current-1));
+function openMap(trigger){modalTrigger=trigger;$('#map-list').replaceChildren();titles.forEach((t,i)=>{const b=document.createElement('button');const number=document.createElement('span');number.textContent=String(i+1).padStart(2,'0');b.append(number,document.createTextNode(state.visited.includes(i)?t:'A little world yet to discover'));b.disabled=!state.visited.includes(i);b.addEventListener('click',()=>{$('#map-dialog').close();go(i);});$('#map-list').append(b);});$('#map-dialog').showModal();}
+$('#chapter-map').addEventListener('click',e=>openMap(e.currentTarget));$('#explore').addEventListener('click',e=>openMap(e.currentTarget));$('.wordmark').addEventListener('click',e=>{e.preventDefault();openMap(e.currentTarget);});
+// Draw the personalized name with connected star strokes rather than font assets.
+const glyphs={A:[[0,100],[25,0],[50,100],[40,60],[10,60]],B:[[0,100],[0,0],[35,0],[50,20],[35,50],[0,50],[35,50],[50,75],[35,100],[0,100]],C:[[50,10],[30,0],[0,25],[0,75],[30,100],[50,90]],D:[[0,100],[0,0],[30,0],[50,25],[50,75],[30,100],[0,100]],E:[[50,0],[0,0],[0,50],[40,50],[0,50],[0,100],[50,100]],F:[[50,0],[0,0],[0,50],[40,50],[0,50],[0,100]],G:[[50,15],[30,0],[0,25],[0,75],[30,100],[50,85],[50,55],[30,55]],H:[[0,0],[0,100],[0,50],[50,50],[50,0],[50,100]],I:[[0,0],[50,0],[25,0],[25,100],[0,100],[50,100]],J:[[0,0],[50,0],[50,80],[35,100],[10,100],[0,80]],K:[[0,0],[0,100],[0,50],[50,0],[0,50],[50,100]],L:[[0,0],[0,100],[50,100]],M:[[0,100],[0,0],[25,45],[50,0],[50,100]],N:[[0,100],[0,0],[50,100],[50,0]],O:[[25,0],[0,20],[0,80],[25,100],[50,80],[50,20],[25,0]],P:[[0,100],[0,0],[35,0],[50,20],[35,50],[0,50]],Q:[[25,0],[0,20],[0,80],[25,100],[50,80],[50,20],[25,0],[30,70],[55,105]],R:[[0,100],[0,0],[35,0],[50,20],[35,50],[0,50],[25,50],[50,100]],S:[[50,10],[30,0],[0,20],[0,40],[50,65],[50,85],[25,100],[0,90]],T:[[0,0],[50,0],[25,0],[25,100]],U:[[0,0],[0,80],[25,100],[50,80],[50,0]],V:[[0,0],[25,100],[50,0]],W:[[0,0],[10,100],[25,55],[40,100],[50,0]],X:[[0,0],[50,100],[25,50],[50,0],[0,100]],Y:[[0,0],[25,50],[50,0],[25,50],[25,100]],Z:[[0,0],[50,0],[0,100],[50,100]]};
+const letters=birthdayConfig.birthdayGirl.toUpperCase().split('');const letterWidth=65,total=letters.length*letterWidth-15,offset=(700-total)/2;
+letters.forEach((letter,i)=>{const pts=glyphs[letter];if(!pts)return;const path=document.createElementNS('http://www.w3.org/2000/svg','polyline');path.setAttribute('points',pts.map(p=>(p[0]+offset+i*letterWidth)+','+(p[1]+25)).join(' '));path.setAttribute('class','constellation-line');$('#name-constellation').append(path);for(const p of pts){const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',p[0]+offset+i*letterWidth);c.setAttribute('cy',p[1]+25);c.setAttribute('r','2');c.setAttribute('class','constellation-star');$('#name-constellation').append(c);}});
+$('#name-constellation').setAttribute('viewBox',Math.min(0,offset-20)+' 0 '+Math.max(700,total+40)+' 150');
+const starPositions=[[6,15],[26,70],[47,3],[66,75],[86,16]];
+birthdayConfig.messages.stars.forEach((text,i)=>{const b=document.createElement('button');b.className='special-star';b.textContent='✧';b.style.left=starPositions[i][0]+'%';b.style.top=starPositions[i][1]+'%';b.setAttribute('aria-label','Discover star '+(i+1));b.addEventListener('click',()=>{b.classList.add('found');if(!state.stars.includes(i))state.stars.push(i);burst(W*starPositions[i][0]/100,H*.4,'sparkles',16);toast(text);chime();});$('#special-stars').append(b);});
+$('.constellation-stage').addEventListener('pointermove',e=>{const r=e.currentTarget.getBoundingClientRect();pointer={x:(e.clientX-r.x)/r.width-.5,y:(e.clientY-r.y)/r.height-.5};if(!reduced.matches)$('#name-constellation').style.transform='perspective(800px) rotateY('+pointer.x*5+'deg) rotateX('+(-pointer.y*4)+'deg)';});
+// Flower positions form the border of a heart when the garden opens.
+const gardenPositions=[[12,55,-28],[19,20,-22],[31,0,-14],[43,9,-5],[55,9,5],[67,0,14],[79,20,22],[86,55,28],[69,76,18],[54,88,8],[40,88,-8],[25,76,-18]];
+gardenPositions.forEach((p,i)=>{const b=document.createElement('button');b.className='flower-object'+(i===7?' golden':'');b.innerHTML=svg('rose');b.style.left='calc('+p[0]+'% - 45px)';b.style.top='calc('+p[1]+'% - 75px)';b.style.transform='rotate('+p[2]+'deg)';b.style.setProperty('--delay',i*.07+'s');b.setAttribute('aria-label',i===7?'Discover the golden rose':'Discover flower '+(i+1));b.addEventListener('click',()=>{if(!state.garden){toast('Let the garden bloom first, my love.');return;}if(i===7&&birthdayConfig.enableEasterEggs){markSecret('rose','For the one who makes my world bloom.');}else{toast(['A little beauty, for your beautiful heart.','You deserve a life that feels like spring.','May this year give you so many reasons to smile.'][i%3]);burst(W/2,H/2,'petals',15);chime();}});$('#garden-flowers').append(b);});
+$('#bloom-garden').addEventListener('click',()=>{state.garden=true;$('#garden').classList.add('bloomed');$('#garden-wish').hidden=false;$('#bloom-garden').hidden=true;$('#garden-next').hidden=false;document.body.classList.add('illuminated');burst(W/2,H*.5,'petals',35);chime(1);});
+$('#wax-seal').addEventListener('click',()=>{state.invitation=true;$('#invitation').classList.add('open');$('.invitation-closed').hidden=true;$('.invitation-open').hidden=false;$('#invitation-next').hidden=false;burst(W*.7,H*.4,'sparkles',28);chime(1);$('#invitation-next').focus({preventScroll:true});});
+let orbitIndex=0;
+const orbitPositions=[[21,22,-9],[50,9,3],[79,22,9],[79,79,-5],[50,95,4],[21,79,7]];
+function selectOrbit(i){orbitIndex=(i+6)%6;$$('.orbit-object').forEach((b,k)=>{b.classList.toggle('selected',k===orbitIndex);b.setAttribute('aria-pressed',String(k===orbitIndex));});$('#orbit-label').textContent=birthdayConfig.messages.reasons[orbitIndex][0];}
+function openReason(i){selectOrbit(i);const item=birthdayConfig.messages.reasons[i];openMessage('A LITTLE THING I LOVE',item[0],item[1],item[2],'— {boyfriend}',birthdayConfig.photos[i]);}
+birthdayConfig.messages.reasons.forEach((item,i)=>{const b=document.createElement('button');b.className='orbit-object';b.style.left=orbitPositions[i][0]+'%';b.style.top=orbitPositions[i][1]+'%';b.style.setProperty('--angle',orbitPositions[i][2]+'deg');b.style.setProperty('--delay',-i*.7+'s');b.innerHTML=svg(item[2]);const label=document.createElement('span');label.textContent=item[0];b.append(label);b.setAttribute('aria-label','Discover '+item[0].toLowerCase());const photo=birthdayConfig.photos[i];if(photo){const image=new Image();image.alt=item[0];image.onload=()=>b.replaceChild(image,b.querySelector('svg'));image.src=photo;}b.addEventListener('click',()=>openReason(i));$('#orbit-objects').append(b);});
+$('#orbit-prev').addEventListener('click',()=>selectOrbit(orbitIndex-1));$('#orbit-next').addEventListener('click',()=>selectOrbit(orbitIndex+1));$('#orbit-open').addEventListener('click',()=>openReason(orbitIndex));selectOrbit(0);
+$('#love-orbit').addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();selectOrbit(orbitIndex+(e.key==='ArrowLeft'?-1:1));$$('.orbit-object')[orbitIndex].focus();}});
+let swipe=null;$('#love-orbit').addEventListener('touchstart',e=>swipe={x:e.changedTouches[0].clientX,y:e.changedTouches[0].clientY},{passive:true});$('#love-orbit').addEventListener('touchend',e=>{if(!swipe)return;const dx=e.changedTouches[0].clientX-swipe.x,dy=e.changedTouches[0].clientY-swipe.y;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy))selectOrbit(orbitIndex+(dx<0?1:-1));swipe=null;},{passive:true});
+const flowers=[['Pink rose','For all the sweetness you bring.','rose','pink'],['White rose','For the peace and beauty you deserve.','rose','white'],['Lavender','For all your dreams.','lavender','lavender'],['Peony','For a life filled with happiness.','peony','peony'],['Golden blossom',"Because you're one of a kind.",'blossom','golden']];
+flowers.forEach((f,i)=>{const b=document.createElement('button');b.className='flower-choice '+f[3];b.innerHTML=svg(f[2]);const label=document.createElement('span');label.textContent=f[0];b.append(label);b.setAttribute('aria-pressed','false');b.addEventListener('click',()=>{if(state.wrapped)return;const index=state.flowers.indexOf(i);if(index>=0)state.flowers.splice(index,1);else state.flowers.push(i);$('#flower-meaning').textContent=f[1];syncBouquet();chime();});$('#flower-picker').append(b);});
+function syncBouquet(){const holder=$('#chosen-flowers');holder.replaceChildren();state.flowers.forEach((id,i)=>{const wrap=document.createElement('div');wrap.innerHTML=svg(flowers[id][2],flowers[id][3]);const flower=wrap.firstChild;flower.style.setProperty('--rotation',((i-(state.flowers.length-1)/2)*18)+'deg');holder.append(flower);});$$('.flower-choice').forEach((b,i)=>{b.setAttribute('aria-pressed',String(state.flowers.includes(i)));b.disabled=state.wrapped;});$('#bouquet-empty').hidden=state.flowers.length>0;$('#wrap-bouquet').disabled=state.flowers.length<3;$('#wrap-bouquet').hidden=state.wrapped;$('#rebuild-bouquet').hidden=!state.wrapped;$('#bouquet-next').hidden=!state.wrapped;$('#bouquet-tag').hidden=!state.wrapped;$('#bouquet-art').classList.toggle('wrapped',state.wrapped);}
+$('#wrap-bouquet').addEventListener('click',()=>{if(state.flowers.length<3)return;state.wrapped=true;syncBouquet();$('#flower-meaning').textContent='A few little wishes, tied together with love.';burst(W*.7,H*.5,'sparkles',28);chime(1);});
+$('#rebuild-bouquet').addEventListener('click',()=>{state.wrapped=false;state.flowers=[];syncBouquet();$('#flower-meaning').textContent='Choose at least three flowers to begin.';});syncBouquet();
+birthdayConfig.messages.vault.forEach((item,i)=>{const b=document.createElement('button');b.className='vault-drawer';b.innerHTML='<span aria-hidden="true">⚿</span>';b.append(document.createTextNode(item[0]));b.addEventListener('click',()=>{if(!state.vault.includes(i))state.vault.push(i);b.classList.add('opened');$('#vault-count').textContent=state.vault.length+' / 3 LITTLE TREASURES DISCOVERED';if(state.vault.length===3)$('#vault-golden').hidden=false;burst(W*.7,H*.5,'sparkles',18);openMessage('FROM THE SECRET VAULT',item[0],item[1],'gem','{boyfriend} ❤️');});$('#vault-drawers').append(b);});
+$('#vault-golden').addEventListener('click',()=>openMessage('THE MOST IMPORTANT MESSAGE','You deserve so much goodness.',"{name}, I hope this birthday brings you the happiness you've been wishing for. You deserve so much goodness in your life.",'heart-icon','{boyfriend} ❤️'));
+birthdayConfig.messages.letter.forEach(text=>{const p=document.createElement('p');p.textContent=template(text);p.className='unrevealed';$('#letter-paragraphs').append(p);});
+function revealWholeLetter(){letterTimers.forEach(id=>{clearTimeout(id);activeTimers.delete(id);});letterTimers.clear();$$('#letter-paragraphs p').forEach(p=>p.classList.remove('unrevealed'));$('#reveal-letter').hidden=true;}
+function openLetter(){$('#envelope').disabled=false;state.letter=true;state.kept=false;$('#envelope').hidden=true;$('#love-letter').hidden=false;$('#keep-letter').hidden=false;$('#letter-next').hidden=false;$('#read-again').hidden=true;$('#kept-note').hidden=true;$('#letter-charm').hidden=true;$('#reveal-letter').hidden=reduced.matches;$$('#letter-paragraphs p').forEach((p,i)=>{if(reduced.matches)p.classList.remove('unrevealed');else{const id=after(()=>{p.classList.remove('unrevealed');letterTimers.delete(id);if(i===birthdayConfig.messages.letter.length-1)$('#reveal-letter').hidden=true;},i*400);letterTimers.add(id);}});chime();}
+$('#envelope').addEventListener('click',()=>{if($('#envelope').disabled)return;$('#envelope').disabled=true;$('#envelope').classList.add('opening');after(openLetter,600);});$('#reveal-letter').addEventListener('click',revealWholeLetter);
+$('#keep-letter').addEventListener('click',()=>{revealWholeLetter();state.kept=true;$('#love-letter').hidden=true;$('#envelope').hidden=false;$('#envelope').classList.remove('opening');$('#letter-charm').hidden=false;$('#keep-letter').hidden=true;$('#read-again').hidden=false;$('#kept-note').hidden=false;$('#letter-next').hidden=false;burst(W*.7,H*.5,'hearts',18);chime();});$('#read-again').addEventListener('click',()=>{openLetter();revealWholeLetter();});
+const savedWish=readStorage(wishKey);if(savedWish)$('#private-wish').value=savedWish;
+$('#save-wish').addEventListener('click',()=>{const value=$('#private-wish').value.trim();if(!value){$('#wish-feedback').textContent='Write a little wish first.';return;}$('#wish-feedback').textContent=writeStorage(wishKey,value)?'Saved only on this device. Your wish remains yours.':'Your browser could not save this wish. It stays in this field until you leave.';});
+$('#delete-wish').addEventListener('click',()=>{eraseStorage(wishKey);$('#private-wish').value='';$('#wish-feedback').textContent='Your saved wish has been forgotten on this device.';});
+$('#wish-coin').addEventListener('click',()=>{if(state.wish)return;state.wish=true;$('#wish-coin').disabled=true;$('#wish-coin').classList.add('tossed');$('#wishing-well').classList.add('wished');$('#well-message').hidden=false;$('#well-next').hidden=false;burst(W*.7,H*.5,'sparkles',30);chime(1);});
+for(let i=0;i<5;i++){const c=document.createElement('span');c.className='candle';c.innerHTML='<span class="flame"></span><span class="smoke"></span>';$('.candles').append(c);}for(let i=0;i<3;i++)$('.cake-flowers').insertAdjacentHTML('beforeend',svg('rose'));
+function lightCandles(){state.cake=1;$('.cake-art').classList.add('lit');$$('.candle').forEach((c,i)=>{if(reduced.matches)c.classList.add('lit');else c.animate([{opacity:.35},{opacity:1}],{duration:700,delay:i*130,fill:'both'});c.classList.add('lit');c.style.transitionDelay=i*.13+'s';});$('#cake-instruction').textContent='Make a Wish, '+birthdayConfig.birthdayGirl+' ❤️';$('#cake-action').textContent='Blow Out the Candles';chime(1);}
+function celebrateCake(){state.cake=2;$$('.candle').forEach((c,i)=>{c.classList.remove('lit');c.classList.add('out');c.style.transitionDelay=i*.1+'s';});$('#cake-art').classList.remove('lit');$('#cake-art').classList.add('celebrated');$('#birthday-cheer').hidden=false;$('#cake-action').hidden=true;$('#cut-cake').hidden=false;$('#cake-next').hidden=false;$('#cake-instruction').textContent='May all your wishes come true, '+birthdayConfig.birthdayGirl+'.';burst(W*.55,H*.35,'confetti',65);burst(W*.75,H*.45,'hearts',22);chime(1);}
+$('#cake-action').addEventListener('click',()=>{if(state.cake===0)lightCandles();else if(state.cake===1)celebrateCake();});$('#cut-cake').addEventListener('click',()=>{if(state.sliced)return;state.sliced=true;$('#cake-art').classList.add('sliced');$('#slice-message').hidden=false;$('#cut-cake').disabled=true;chime();});
+function finishSky(){if(!state.sky)return;skyPoints=wordPoints();$('#sky-dedication').hidden=false;$('#sky-next').hidden=false;$('#skip-fireworks').hidden=true;$('#light-sky').hidden=true;draw(performance.now());}
+$('#light-sky').addEventListener('click',()=>{if(state.sky)return;state.sky=true;$('#light-sky').hidden=true;if(reduced.matches||!birthdayConfig.fireworksEnabled){finishSky();return;}$('#skip-fireworks').hidden=false;const patterns=['halo','heart','rose','heart','halo'];patterns.forEach((p,i)=>after(()=>firework(W*(.22+(i%3)*.27),H*(.3+(i%2)*.1),p),i*850));after(finishSky,4700);});
+$('#skip-fireworks').addEventListener('click',()=>{clearTimers();effects=[];finishSky();});
+function reset(){awaitingResume=false;clearTimers();clearTimeout(transitionTimer);busy=false;state=fresh();current=0;effects=[];skyPoints=[];warpUntil=0;pointer={x:0,y:0};document.body.classList.remove('illuminated','traveling');scenes.forEach(s=>s.querySelector('.composition').scrollTop=0);
+ $('#garden').classList.remove('bloomed');$('#garden-wish').hidden=true;$('#bloom-garden').hidden=false;$('#garden-next').hidden=true;
+ $('#invitation').classList.remove('open');$('.invitation-closed').hidden=false;$('.invitation-open').hidden=true;$('#invitation-next').hidden=true;
+ $$('.special-star').forEach(b=>b.classList.remove('found'));selectOrbit(0);syncBouquet();$('#flower-meaning').textContent='Choose at least three flowers to begin.';
+ $$('.vault-drawer').forEach(b=>b.classList.remove('opened'));$('#vault-golden').hidden=true;$('#vault-count').textContent='THREE LITTLE TREASURES TO DISCOVER';
+ $('#envelope').hidden=false;$('#envelope').disabled=false;$('#envelope').classList.remove('opening');$('#love-letter').hidden=true;$('#keep-letter').hidden=true;$('#letter-next').hidden=true;$('#read-again').hidden=true;$('#letter-charm').hidden=true;$('#kept-note').hidden=true;$('#reveal-letter').hidden=true;$$('#letter-paragraphs p').forEach(p=>p.classList.add('unrevealed'));$('#letter-paragraphs').scrollTop=0;
+ $('#wish-coin').classList.remove('tossed');$('#wish-coin').disabled=false;$('#wishing-well').classList.remove('wished');$('#well-message').hidden=true;$('#well-next').hidden=true;$('#wish-feedback').textContent='';
+ $$('.candle').forEach(c=>{c.classList.remove('lit','out');c.getAnimations().forEach(a=>a.cancel());c.style.transitionDelay='';});$('#cake-art').classList.remove('lit','celebrated','sliced');$('#birthday-cheer').hidden=true;$('#cake-action').hidden=false;$('#cake-action').innerHTML='Light the Candles <span>✧</span>';$('#cut-cake').hidden=true;$('#cut-cake').disabled=false;$('#cake-next').hidden=true;$('#slice-message').hidden=true;$('#cake-instruction').textContent="Let's Light Up Your Special Day!";
+ $('#sky-dedication').hidden=true;$('#sky-next').hidden=true;$('#light-sky').hidden=false;$('#skip-fireworks').hidden=true;
+ $$('dialog[open]').forEach(d=>d.close());clearTimeout(toastTimer);$('#toast').classList.remove('show');eraseStorage(storageKey);updateSecrets();syncScene();draw(performance.now());}
+$('#replay').addEventListener('click',reset);
+$('#resume').addEventListener('click',()=>{awaitingResume=false;$('#resume-dialog').close();state.visited=[...new Set([0,...saved.visited])];state.secrets=Array.isArray(saved.secrets)?saved.secrets.filter(s=>['moon','rose','star'].includes(s)):[];current=saved.current;updateSecrets();syncScene();});$('#restart').addEventListener('click',()=>{$('#resume-dialog').close();reset();});
+// A few desktop trail particles, throttled; never replace the real cursor.
+let lastTrail=0;document.addEventListener('pointermove',e=>{if(!fine.matches||reduced.matches||e.pointerType!=='mouse')return;const now=performance.now();if(now-lastTrail>180){lastTrail=now;if(effects.length<25)addParticle({x:e.clientX,y:e.clientY,vx:0,vy:-.25,life:.4,decay:.015,color:'#e9c88b',size:1,type:'sparkles',rotation:0});}});
+document.addEventListener('visibilitychange',()=>{document.body.classList.toggle('paused',document.hidden);if(document.hidden){stopLoop();if(localAudio)localAudio.pause();if(audioContext)audioContext.suspend();audioOn=false;syncAudio();}else{countdown();startLoop();}});
+awaitingResume=Boolean(saved&&saved.current>0);resize();syncScene(false);syncAudio();updateSecrets();startLoop();$('#loader').classList.add('done');
+if(saved&&saved.current>0){awaitingResume=true;$('#resume-dialog').showModal();}
 })();
