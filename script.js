@@ -374,8 +374,22 @@ for(let i=0;i<20;i++){const p=heartPoint(i/20*Math.PI*2);const wrap=document.cre
 function replay(){savedProgress=null;resetChapters();clearTimers();clearTimeout(lockTimer);endHold();hearts.reset();locked=false;scene=0;discovered.clear();discovered.add(0);sealTaps=0;letterOpen=false;gardenOpen=false;cakeState=0;stormPlayed=false;$$('[data-next]').forEach(b=>b.disabled=false);$('#back').disabled=false;$('#experience').setAttribute('aria-busy','false');$$('dialog[open]').forEach(d=>d.close());$('#hero-envelope').classList.remove('opened');$('#open-surprise').disabled=false;$('#rose-garden').classList.remove('bloomed');$('#rose-garden').classList.add('closed');$('#garden-heart-message').hidden=true;$('#bloom').hidden=false;$('#garden-next').hidden=true;$('#garden-caption').textContent='A few little wishes, waiting to bloom for you.';$$('.keepsake').forEach(b=>b.classList.remove('selected'));$('.stationery').classList.remove('opened');$('#love-letter').classList.add('folded');$('.folded-label').hidden=false;$('#letter-content').hidden=true;$('#unfold-letter').hidden=false;$('#read-all').hidden=true;$('#letter-next').hidden=true;$('#letter-heart-note').hidden=true;$('#letter-reading').scrollTop=0;$$('#letter-reading p').forEach(p=>p.classList.add('unrevealed'));$$('.candle').forEach(c=>c.classList.remove('lit','out','flicker'));$('#cake-world').classList.remove('lit','sliced','wish-moment');$('#cake-cheer').hidden=true;$('#cake-action').hidden=false;$('#cake-action').disabled=false;$('#cake-action').textContent='Light the Candles ✨';$('#cake-instruction').textContent=personalize(birthdayConfig.messages.cakeIntro);$('#birthday-cake').setAttribute('aria-label','A rose decorated three tier birthday cake with five unlit candles');$('#cut-cake').hidden=true;$('#slice-wish').hidden=true;$('#cake-next').hidden=true;$('#hold-result').hidden=true;$('#hold-love').style.setProperty('--hold','0');$('#feel-again').hidden=true;scenes.forEach(s=>s.querySelector('.scene-layout').scrollTop=0);clearTimeout(toastTimer);$('#toast').classList.remove('show');$('#toast').textContent='';updateScene();later(()=>scenes[scene].querySelector('h1,h2').focus({preventScroll:true}),1150);}
 $('#replay').addEventListener('click',replay);
 
+
+// Keep complete copy, using sentence boundaries where a reading page permits.
+function readingPages(paragraphs,limit){
+ return paragraphs.flatMap(text=>{
+  if(text.length<=limit)return [text];
+  const pages=[];let part='';
+  for(const sentence of text.split(/(?<=[.!?])\s+/)){
+   if(sentence.length<=limit){if(part&&(part+' '+sentence).length>limit){pages.push(part);part='';}part+=(part?' ':'')+sentence;}
+   else{if(part){pages.push(part);part='';}for(const word of sentence.split(' ')){if(part&&(part+' '+word).length>limit){pages.push(part);part='';}part+=(part?' ':'')+word;}}
+  }
+  if(part)pages.push(part);return pages;
+ });
+}
+
 class ReadingFlow {
- constructor(element,paragraphs){this.element=element;this.originalParagraphs=paragraphs;this.paragraphs=paragraphs.flatMap(text=>{if(text.length<205)return [text];const words=text.split(' '),pages=[];let part='';for(const word of words){if((part+' '+word).length>195&&part){pages.push(part);part=word;}else part+=(part?' ':'')+word;}if(part)pages.push(part);return pages;});this.index=0;this.full=false;this.render();}
+ constructor(element,paragraphs){this.element=element;this.originalParagraphs=paragraphs;this.paragraphs=readingPages(paragraphs,element.dataset.reading==='garden'?155:195);this.index=0;this.full=false;this.render();}
  render(){
  const e=this.element;e.replaceChildren();e.dataset.step=this.index%3;
  const view=document.createElement('div');view.className='reader-view changing'+(this.full?' all-copy':'');view.setAttribute('aria-live','polite');view.tabIndex=0;
